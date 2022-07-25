@@ -2,6 +2,7 @@ import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { AvatarUploader } from './AvatarUploader';
 import userEvent from '@testing-library/user-event';
+import ResizeObserver from 'resize-observer-polyfill';
 
 test('renders AvatarUploader', () => {
 	render(<AvatarUploader />);
@@ -21,6 +22,8 @@ const readFile = (file: File) => new Promise<string>((resolve, reject) => {
 });
 
 test('displays cropping editor for selected file as the avatar image', async () => {
+	window.ResizeObserver = ResizeObserver;
+
 	render(<AvatarUploader />);
 
 	let fileInput = screen.getByTestId("file-input");
