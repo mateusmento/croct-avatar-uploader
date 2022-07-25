@@ -1,3 +1,8 @@
 export function AvatarUploader() {
-	return (null);
+	return (
+		<div>
+			<span>Organization Logo</span>
+			<span>Drop the image here or click to browse.</span>
+		</div>
+	);
 }
