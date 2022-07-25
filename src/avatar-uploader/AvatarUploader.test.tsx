@@ -20,13 +20,20 @@ const readFile = (file: File) => new Promise<string>((resolve, reject) => {
 	reader.onerror = error => reject(error);
 });
 
-test('displays selected file as avatar image', async () => {
+test('displays cropping editor for selected file as the avatar image', async () => {
 	render(<AvatarUploader />);
+
 	let fileInput = screen.getByTestId("file-input");
 	let file = new File(["image"], "image.png", { type: "image/png" });
+
 	userEvent.upload(fileInput, file);
+
 	await waitFor(async () => {
 		let preview: HTMLImageElement = screen.getByTestId('avatar-preview');
 		expect(preview.src).toBe(await readFile(file));
 	});
+
+	screen.getByTestId("close-button");
+	screen.getByTestId("save-avatar-button");
+	screen.getByTestId("radius-input-slider");
 });
