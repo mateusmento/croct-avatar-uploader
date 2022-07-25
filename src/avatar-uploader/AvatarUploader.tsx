@@ -1,9 +1,12 @@
 /** @jsxImportSource @emotion/react */
 import { css } from '@emotion/react';
 import styled from '@emotion/styled';
+import { useMachine } from '@xstate/react';
 import { useState } from 'react';
 import { ChangeEvent, useRef } from 'react';
-import { BsImage } from 'react-icons/bs';
+import { BsImage, BsX } from 'react-icons/bs';
+import { createMachine } from 'xstate';
+import Slider from 'react-slider';
 
 const readFile = (file: File) => new Promise<string>((resolve, reject) => {
 	const reader = new FileReader();
@@ -13,6 +16,23 @@ const readFile = (file: File) => new Promise<string>((resolve, reject) => {
 });
 
 export function AvatarUploader() {
+
+	let [current, send] = useMachine(() => createMachine({
+		id: 'avatar-uploader',
+		initial: 'view-avatar-upload',
+		states: {
+			'view-avatar-upload': {
+				on: {
+					CROP: 'cropping-avatar',
+				},
+			},
+			'cropping-avatar': {
+				on: {
+					VIEW_AVATAR: 'view-avatar-upload',
+				},
+			},
+		},
+	}));
 
 	let [image, setImage] = useState<string>();
 	let inputRef = useRef<HTMLInputElement>(null);
@@ -25,23 +45,47 @@ export function AvatarUploader() {
 		let file = e.target.files?.[0];
 		if (file) {
 			setImage(await readFile(file));
+			send('CROP');
 		}
 	}
 
 	return (
 		<div css={avatarUploaderCss}>
-			<div css={viewAvatarUploadCss} onClick={browserImage}>
-				{image && (
+			{current.matches("view-avatar-upload") && (
+				<div css={viewAvatarUploadCss} onClick={browserImage}>
+					{image && (
+						<AvatarPreview css={avatarPreviewCss}>
+							<img className="cropped" src={image} alt="" data-testid="avatar-preview"/>
+						</AvatarPreview>
+					)}
+					<div css={viewAvatarUploadPlaceholderCss}>
+						<span><BsImage css={imageIconCss}/> Organization Logo</span>
+						<span>Drop the image here or click to browse.</span>
+					</div>
+					<input type="file" onChange={onFileSelected} hidden ref={inputRef} data-testid="file-input"/>
+				</div>
+			)}
+
+			{current.matches("cropping-avatar") && (
+				<div>
 					<AvatarPreview css={avatarPreviewCss}>
 						<img className="cropped" src={image} alt="" data-testid="avatar-preview"/>
 					</AvatarPreview>
-				)}
-				<div css={viewAvatarUploadPlaceholderCss}>
-					<span><BsImage css={imageIconCss}/> Organization Logo</span>
-					<span>Drop the image here or click to browse.</span>
+
+					<div>
+						<label>Crop</label>
+						<Slider
+							trackClassName="slider__track"
+							thumbClassName="slider_thumb"
+							min={1} max={10} step={.1}
+							data-testid="radius-input-slider"
+						/>
+						<button data-testid="save-avatar-button">Save</button>
+					</div>
+
+					<BsX data-testid="close-button"/>
 				</div>
-			</div>
-			<input type="file" onChange={onFileSelected} hidden ref={inputRef} data-testid="file-input"/>
+			)}
 		</div>
 	);
 }
