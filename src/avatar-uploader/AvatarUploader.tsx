@@ -1,5 +1,6 @@
 /** @jsxImportSource @emotion/react */
 import { css } from '@emotion/react';
+import styled from '@emotion/styled';
 import { useState } from 'react';
 import { ChangeEvent, useRef } from 'react';
 import { BsImage } from 'react-icons/bs';
@@ -31,7 +32,9 @@ export function AvatarUploader() {
 		<div css={avatarUploaderCss}>
 			<div css={viewAvatarUploadCss} onClick={browserImage}>
 				{image && (
-					<img src={image} alt="" data-testid="avatar-preview"/>
+					<AvatarPreview>
+						<img className="cropped" src={image} alt="" data-testid="avatar-preview"/>
+					</AvatarPreview>
 				)}
 				<span><BsImage css={imageIconCss}/> Organization Logo</span>
 				<span>Drop the image here or click to browse.</span>
@@ -71,4 +74,22 @@ let imageIconCss = css`
 	margin-right: 10px;
 	font-size: 1.2rem;
 	vertical-align: middle;
+`;
+
+let AvatarPreview = styled.div<{radius?: number}>`
+	display: flex;
+	justify-content: center;
+	align-items: center;
+
+	width: 150px;
+	height: 150px;
+	overflow: hidden;
+  clip-path: circle(50% at center);
+
+	.cropped {
+		--croppingRadius: ${({radius}) => radius || 1};
+		width: calc(100% * var(--croppingRadius));
+		height: calc(100% * var(--croppingRadius));
+		object-fit: cover;
+	}
 `;
