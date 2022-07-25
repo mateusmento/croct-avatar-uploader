@@ -1,5 +1,5 @@
 import React from 'react';
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { AvatarUploader } from './AvatarUploader';
 import userEvent from '@testing-library/user-event';
 
@@ -35,5 +35,4 @@ test('displays cropping editor for selected file as the avatar image', async () 
 
 	screen.getByTestId("close-button");
 	screen.getByTestId("save-avatar-button");
-	screen.getByTestId("radius-input-slider");
 });
