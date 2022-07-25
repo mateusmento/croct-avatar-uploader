@@ -5,11 +5,10 @@ import { BsImage } from 'react-icons/bs';
 export function AvatarUploader() {
 	return (
 		<div css={avatarUploaderCss}>
-			<span>
-				<BsImage/>
-				Organization Logo
-			</span>
-			<span>Drop the image here or click to browse.</span>
+			<div css={viewAvatarUploadCss}>
+				<span><BsImage css={imageIconCss}/> Organization Logo</span>
+				<span>Drop the image here or click to browse.</span>
+			</div>
 		</div>
 	);
 }
@@ -30,4 +29,18 @@ let avatarUploaderCss = css`
 	background-size: 3px 100%, 100% 3px, 3px 100% , 100% 3px;
 	background-position: 0 0, 0 0, 100% 0, 0 100%;
 	background-repeat: no-repeat;
+`;
+
+let viewAvatarUploadCss = css`
+	display: flex;
+	height: 100%;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+`;
+
+let imageIconCss = css`
+	margin-right: 10px;
+	font-size: 1.2rem;
+	vertical-align: middle;
 `;
