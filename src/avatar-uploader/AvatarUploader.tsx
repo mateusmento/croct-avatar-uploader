@@ -1,14 +1,42 @@
 /** @jsxImportSource @emotion/react */
 import { css } from '@emotion/react';
+import { useState } from 'react';
+import { ChangeEvent, useRef } from 'react';
 import { BsImage } from 'react-icons/bs';
 
+const readFile = (file: File) => new Promise<string>((resolve, reject) => {
+	const reader = new FileReader();
+	reader.readAsDataURL(file);
+	reader.onload = () => resolve(reader.result as string);
+	reader.onerror = error => reject(error);
+});
+
 export function AvatarUploader() {
+
+	let [image, setImage] = useState<string>();
+	let inputRef = useRef<HTMLInputElement>(null);
+
+	function browserImage() {
+		if (inputRef.current) inputRef.current.click();
+	}
+
+	async function onFileSelected(e: ChangeEvent<HTMLInputElement>) {
+		let file = e.target.files?.[0];
+		if (file) {
+			setImage(await readFile(file));
+		}
+	}
+
 	return (
 		<div css={avatarUploaderCss}>
-			<div css={viewAvatarUploadCss}>
+			<div css={viewAvatarUploadCss} onClick={browserImage}>
+				{image && (
+					<img src={image} alt="" data-testid="avatar-preview"/>
+				)}
 				<span><BsImage css={imageIconCss}/> Organization Logo</span>
 				<span>Drop the image here or click to browse.</span>
 			</div>
+			<input type="file" onChange={onFileSelected} hidden ref={inputRef} data-testid="file-input"/>
 		</div>
 	);
 }
