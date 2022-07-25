@@ -1,0 +1,30 @@
+.slider {
+	height: 20px;
+}
+
+.slider__track {
+	background: #3f80ff;
+	height: 2px;
+	top: 50%;
+	transform: translateY(-50%);
+}
+
+.slider__track-0 {
+	background: #3f80ff;
+}
+
+.slider__track-1 {
+	background: #b9d1ff;
+}
+
+.slider_thumb {
+	--size: 20px;
+	width: var(--size);
+	height: var(--size);
+	background-color: #3f80ff;
+	color: white;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	border-radius: 50%;
+}

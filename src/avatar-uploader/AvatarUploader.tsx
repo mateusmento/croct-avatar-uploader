@@ -1,6 +1,7 @@
 /** @jsxImportSource @emotion/react */
 import { css } from '@emotion/react';
 import styled from '@emotion/styled';
+import './AvatarUploader.css';
 import { useMachine } from '@xstate/react';
 import { useState } from 'react';
 import { ChangeEvent, useRef } from 'react';
@@ -49,6 +50,9 @@ export function AvatarUploader() {
 		}
 	}
 
+	function updateCroppingRadius(radius: number) {
+	}
+
 	return (
 		<div css={avatarUploaderCss}>
 			{current.matches("view-avatar-upload") && (
@@ -67,23 +71,24 @@ export function AvatarUploader() {
 			)}
 
 			{current.matches("cropping-avatar") && (
-				<div>
+				<div css={croppingAvatarCss}>
 					<AvatarPreview css={avatarPreviewCss}>
 						<img className="cropped" src={image} alt="" data-testid="avatar-preview"/>
 					</AvatarPreview>
 
-					<div>
+					<div css={croppingEditorCss}>
 						<label>Crop</label>
 						<Slider
 							trackClassName="slider__track"
 							thumbClassName="slider_thumb"
 							min={1} max={10} step={.1}
+							onChange={updateCroppingRadius}
 							data-testid="radius-input-slider"
 						/>
-						<button data-testid="save-avatar-button">Save</button>
+						<button css={saveAvatarButton} data-testid="save-avatar-button">Save</button>
 					</div>
 
-					<BsX data-testid="close-button"/>
+					<BsX className="close" data-testid="close-button"/>
 				</div>
 			)}
 		</div>
@@ -148,4 +153,47 @@ let AvatarPreview = styled.div<{radius?: number}>`
 		height: calc(100% * var(--croppingRadius));
 		object-fit: cover;
 	}
+`;
+
+
+let croppingAvatarCss = css`
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	position: relative;
+
+	.close {
+		position: absolute;
+		top: 0;
+		right: 0;
+		font-size: 2rem;
+	}
+`;
+
+let croppingEditorCss = css`
+	width: 278.35px;
+
+	label {
+		display: block;
+		width: -moz-fit-content;
+		width: fit-content;
+		margin-right: auto;
+		margin-bottom: 20px;
+	}
+
+`;
+
+let saveAvatarButton = css`
+	display: block;
+	margin-left: auto;
+	margin-top: 20px;
+	background-color: #3a445a;
+	color: white;
+
+	width: 120px;
+	height: 35px;
+	border-radius: 20px;
+  border: none;
+	font-size: 1em;
+  cursor: pointer;
 `;
