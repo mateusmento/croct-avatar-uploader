@@ -3,7 +3,7 @@ import { css } from '@emotion/react';
 import styled from '@emotion/styled';
 import './AvatarUploader.css';
 import { useMachine } from '@xstate/react';
-import { useState } from 'react';
+import { MouseEvent, useState } from 'react';
 import { ChangeEvent, useRef } from 'react';
 import { BsImage, BsX } from 'react-icons/bs';
 import { createMachine } from 'xstate';
@@ -15,6 +15,11 @@ const readFile = (file: File) => new Promise<string>((resolve, reject) => {
 	reader.onload = () => resolve(reader.result as string);
 	reader.onerror = error => reject(error);
 });
+
+interface CroppedImage {
+	content: string;
+	radius: number;
+}
 
 export function AvatarUploader() {
 
@@ -35,22 +40,43 @@ export function AvatarUploader() {
 		},
 	}));
 
-	let [image, setImage] = useState<string>();
+	let [croppingRadius, setCroppingRadius] = useState(1);
+	let [croppingImage, setCroppingImage] = useState<string>('');
+	let [image, setImage] = useState<CroppedImage>();
 	let inputRef = useRef<HTMLInputElement>(null);
+
+
+	function startCropping(content: string, radius: number) {
+		setCroppingImage(content);
+		setCroppingRadius(radius);
+		send('CROP');
+	}
 
 	function browserImage() {
 		if (inputRef.current) inputRef.current.click();
 	}
 
-	async function onFileSelected(e: ChangeEvent<HTMLInputElement>) {
+	async function startCroppingOnFileSelected(e: ChangeEvent<HTMLInputElement>) {
 		let file = e.target.files?.[0];
-		if (file) {
-			setImage(await readFile(file));
-			send('CROP');
-		}
+		if (file) startCropping(await readFile(file), 1);
+	}
+
+	function startCroppingOnAvatarPreviewClick(e: MouseEvent) {
+		e.stopPropagation();
+		if (image) startCropping(image.content, image.radius);
 	}
 
 	function updateCroppingRadius(radius: number) {
+		setCroppingRadius(radius);
+	}
+
+	function saveCropping() {
+		setImage({content: croppingImage, radius: croppingRadius});
+		send('VIEW_AVATAR');
+	}
+
+	function cancelCropping() {
+		send('VIEW_AVATAR');
 	}
 
 	return (
@@ -58,37 +84,38 @@ export function AvatarUploader() {
 			{current.matches("view-avatar-upload") && (
 				<div css={viewAvatarUploadCss} onClick={browserImage}>
 					{image && (
-						<AvatarPreview css={avatarPreviewCss}>
-							<img className="cropped" src={image} alt="" data-testid="avatar-preview"/>
+						<AvatarPreview radius={image.radius} css={avatarPreviewCss} onClick={startCroppingOnAvatarPreviewClick}>
+							<img className="cropped-avatar" src={image.content} alt="" data-testid="avatar-preview"/>
 						</AvatarPreview>
 					)}
 					<div css={viewAvatarUploadPlaceholderCss}>
 						<span><BsImage css={imageIconCss}/> Organization Logo</span>
 						<span>Drop the image here or click to browse.</span>
 					</div>
-					<input type="file" onChange={onFileSelected} hidden ref={inputRef} data-testid="file-input"/>
+					<input type="file" onChange={startCroppingOnFileSelected} hidden ref={inputRef} data-testid="file-input"/>
 				</div>
 			)}
 
 			{current.matches("cropping-avatar") && (
 				<div css={croppingAvatarCss}>
-					<AvatarPreview css={avatarPreviewCss}>
-						<img className="cropped" src={image} alt="" data-testid="avatar-preview"/>
+					<AvatarPreview radius={croppingRadius} css={avatarPreviewCss}>
+						<img className="cropped-avatar" src={croppingImage} alt="" data-testid="avatar-preview"/>
 					</AvatarPreview>
 
-					<div css={croppingEditorCss}>
-						<label>Crop</label>
+					<div css={croppingControlCss}>
+						<span css={croppingSliderLabel}>Crop</span>
 						<Slider
 							trackClassName="slider__track"
 							thumbClassName="slider_thumb"
 							min={1} max={10} step={.1}
+							value={croppingRadius}
 							onChange={updateCroppingRadius}
 							data-testid="radius-input-slider"
 						/>
-						<button css={saveAvatarButton} data-testid="save-avatar-button">Save</button>
+						<button css={saveAvatarButton} onClick={saveCropping} data-testid="save-avatar-button">Save</button>
 					</div>
 
-					<BsX className="close" data-testid="close-button"/>
+					<BsX className="close" onClick={cancelCropping} data-testid="close-button"/>
 				</div>
 			)}
 		</div>
@@ -147,7 +174,7 @@ let AvatarPreview = styled.div<{radius?: number}>`
 	overflow: hidden;
   clip-path: circle(50% at center);
 
-	.cropped {
+	.cropped-avatar {
 		--croppingRadius: ${({radius}) => radius || 1};
 		width: calc(100% * var(--croppingRadius));
 		height: calc(100% * var(--croppingRadius));
@@ -170,17 +197,16 @@ let croppingAvatarCss = css`
 	}
 `;
 
-let croppingEditorCss = css`
+let croppingControlCss = css`
 	width: 278.35px;
+`;
 
-	label {
-		display: block;
-		width: -moz-fit-content;
-		width: fit-content;
-		margin-right: auto;
-		margin-bottom: 20px;
-	}
-
+let croppingSliderLabel = css`
+	display: block;
+	width: -moz-fit-content;
+	width: fit-content;
+	margin-right: auto;
+	margin-bottom: 20px;
 `;
 
 let saveAvatarButton = css`
