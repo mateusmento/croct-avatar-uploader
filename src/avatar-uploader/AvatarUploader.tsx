@@ -32,12 +32,14 @@ export function AvatarUploader() {
 		<div css={avatarUploaderCss}>
 			<div css={viewAvatarUploadCss} onClick={browserImage}>
 				{image && (
-					<AvatarPreview>
+					<AvatarPreview css={avatarPreviewCss}>
 						<img className="cropped" src={image} alt="" data-testid="avatar-preview"/>
 					</AvatarPreview>
 				)}
-				<span><BsImage css={imageIconCss}/> Organization Logo</span>
-				<span>Drop the image here or click to browse.</span>
+				<div css={viewAvatarUploadPlaceholderCss}>
+					<span><BsImage css={imageIconCss}/> Organization Logo</span>
+					<span>Drop the image here or click to browse.</span>
+				</div>
 			</div>
 			<input type="file" onChange={onFileSelected} hidden ref={inputRef} data-testid="file-input"/>
 		</div>
@@ -63,6 +65,16 @@ let avatarUploaderCss = css`
 `;
 
 let viewAvatarUploadCss = css`
+	display: flex;
+	justify-content: center;
+	align-items: center;
+`;
+
+let avatarPreviewCss = css`
+	margin-right: 50px;
+`;
+
+let viewAvatarUploadPlaceholderCss = css`
 	display: flex;
 	height: 100%;
 	flex-direction: column;
